@@ -1,0 +1,3 @@
+[submodule "python-serial-ntp"]
+	path = python-serial-ntp
+	url = https://github.com/Rooholla-KhorramBakht/python-serial-ntp.git
