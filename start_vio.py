@@ -67,11 +67,11 @@ except KeyboardInterrupt:
     time.sleep(0.5)
     terminateIMU()
     time.sleep(2)
-    files = os.listdir('data_tmp_dir')
-    if len(files):
-        print('Moving the recorded dataset ...')
-        for file in files:
-            if os.path.isfile(os.path.join('data_tmp_dir', file)):
-                move(os.path.join('data_tmp_dir', file), dataset_path)
+#    files = os.listdir('data_tmp_dir')
+#    if len(files):
+#        print('Moving the recorded dataset ...')
+#        for file in files:
+#            if os.path.isfile(os.path.join('data_tmp_dir', file)):
+#                move(os.path.join('data_tmp_dir', file), dataset_path)
     exit(0)
 

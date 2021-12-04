@@ -19,6 +19,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define CSV_PATH "/dev/shm/camera_stamps.csv"
+#define VID_PATH "/dev/shm/video.h264"
+
 #define IP_PROTOCOL 0
 char ip_address[] = "10.42.0.1";
 int port = 10000;
@@ -51,17 +54,18 @@ void intHandler(int dummy) {
 
 FILE *fd;
 FILE *csv_fp;
-char file_name[] = "recorded_data/camera_stamps";
-void writeCsv(struct timespec stamp){
+
+void writeCsv(struct timeval stamp){
     static int index = 0;
-    fprintf(csv_fp,"\n%lu,%lu,%lu",index, stamp.tv_sec,stamp.tv_nsec);
+    fprintf(csv_fp,"\n%lu,%llu,%llu",index, (unsigned long long)stamp.tv_sec,(unsigned long long)stamp.tv_usec);
     index ++;
+//    printf("\n%lu,%llu,%llu",index, (unsigned long long)stamp.tv_sec,(unsigned long long)stamp.tv_usec);
 }
 
 void openCsv(char *filename)
 {
-    csv_fp=fopen("data_tmp_dir/camera_stamps.csv","w+");
-    fprintf(csv_fp,"index, stamp_sec, stamp_nsec");
+    csv_fp=fopen(filename,"w+");
+    fprintf(csv_fp,"index, stamp_sec, stamp_usec");
 }
 void closeCsv()
 {
@@ -99,8 +103,9 @@ int video_callback(BUFFER *buffer) {
             // Here may be just a part of the data, we need to check it.
             if (buffer->flags & MMAL_BUFFER_HEADER_FLAG_FRAME_END)
             {
-                struct timespec stamp;
-                clock_gettime(CLOCK_MONOTONIC, &stamp);
+                struct timeval stamp;
+                //clock_gettime(CLOCK_MONOTONIC, &stamp);
+                gettimeofday(&stamp,NULL);
                 writeCsv(stamp);
                 hypervisor_packet.data.state1 = 1;
 
@@ -185,7 +190,7 @@ int main(int argc, char **argv) {
     
 
     signal(SIGINT, intHandler);
-    openCsv(file_name);
+    openCsv(CSV_PATH);
     CAMERA_INSTANCE camera_instance;
     int count = 0;
     int width = 0, height = 0;
@@ -231,15 +236,15 @@ int main(int argc, char **argv) {
 #endif
     //write_regs(camera_instance, regs, regs_size);
     arducam_set_mode(camera_instance, 13);
-   if (arducam_set_control(camera_instance, V4L2_CID_EXPOSURE, (int)(3*0xFFFF/200.0))) {
+   if (arducam_set_control(camera_instance, V4L2_CID_EXPOSURE, (int)(3.5*0xFFFF/200.0))) {
     LOG("Failed to set exposure, the camera may not support this control.");
     }
-   if (arducam_set_control(camera_instance, V4L2_CID_GAIN, (int)(4))) {
+   if (arducam_set_control(camera_instance, V4L2_CID_GAIN, (int)(5))) {
     LOG("Failed to set exposure, the camera may not support this control.");
     }
 
 
-    fd = fopen("data_tmp_dir/video.h264", "wb");
+    fd = fopen(VID_PATH, "wb");
     VIDEO_ENCODER_STATE video_state;
     default_status(&video_state);
     // start video callback
@@ -250,15 +255,16 @@ int main(int argc, char **argv) {
         LOG("Failed to start video encoding, probably due to resolution greater than 1920x1080 or video_state setting error.");
         return -1;
     }
+    
+    struct timespec start, end;
+    clock_gettime(CLOCK_REALTIME, &start);
+    usleep(1000 * 1000 * 10);
+    clock_gettime(CLOCK_REALTIME, &end);
 
-//    struct timespec start, end;
-//    clock_gettime(CLOCK_REALTIME, &start);
-//    usleep(1000 * 1000 * 10);
-//    clock_gettime(CLOCK_REALTIME, &end);
+    double timeElapsed = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1000000000.0;
+    LOG("Total frame count = %d", frame_count);
+    LOG("TimeElapsed = %f", timeElapsed);
 
-//    double timeElapsed = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1000000000.0;
-//    LOG("Total frame count = %d", frame_count);
-//    LOG("TimeElapsed = %f", timeElapsed);
     while(running)
         sleep(0.1);
     // stop video callback

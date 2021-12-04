@@ -15,7 +15,7 @@ hyperTele = hypervisorTelemetry('10.42.0.1', 10000, state_ids, state_vals)
 
 
 imu_dataset = []
-port = serial.Serial('/dev/ttyAMA0', 921600, timeout=1)
+port = serial.Serial('/dev/serial0', 921600, timeout=1)
 port.flush()
 
 try:
@@ -25,7 +25,7 @@ try:
             packed_data = struct.unpack('3f3ff2i',data)
             ax,ay,az,wx,wy,wz,temp, imu_ts,camera_ts=packed_data
             #print(ax,ay,az,wx,wy,wz,temp, imu_ts,camera_ts)
-            imu_dataset.append([time.time_ns(), ax,ay,az,wx,wy,wz,temp, imu_ts,camera_ts])
+            imu_dataset.append([time.time_ns()/1000000.0, ax,ay,az,wx,wy,wz,temp, imu_ts,camera_ts])
             state_vals['imu_stream_state'] = True
         else:
             state_vals['imu_stream_state'] = False

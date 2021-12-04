@@ -13,14 +13,17 @@ CXXFLAGS?= -I. -g -std=gnu++11 ${OPENCV_LIB}
 LDFLAGS	?=
 LIBS	:= -larducam_mipicamera -lpthread #-lwiringPi
 OLIB	:= lib
-examples:= video
+examples:= h264_capture image_capture
 %.o : %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 all: $(examples)
 
-video: video.c
+h264_capture: h264_capture.c
 	$(CC) $(LDFLAGS) $(CFLAGS) -o $@ $^ $(LIBS)
+
+image_capture: image_capture.cpp
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)
 
 clean:
 	-rm -f *.o
