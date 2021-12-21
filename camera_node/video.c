@@ -197,8 +197,8 @@ int main(int argc, char **argv) {
         return -1;
     }
 
-    width = 1920;
-    height = 1080;
+    width = 1280;
+    height = 720;
     LOG("Setting the resolution...");
     res = arducam_set_resolution(camera_instance, &width, &height);
     if (res) {
@@ -208,6 +208,7 @@ int main(int argc, char **argv) {
         LOG("Current resolution is %dx%d", width, height);
         LOG("Notice:You can use the list_format sample program to see the resolution and control supported by the camera.");
     }
+
 #if defined(ENABLE_PREVIEW)
     LOG("Start preview...");
     PREVIEW_PARAMS preview_params = {
