@@ -23,4 +23,4 @@ It is also important to note that the defauld i2c name in the dev directory does
 sudo ln -s /dev/i2c-0 /dev/i2c-10
 ```
 
-Finally, enable the camera interface through the raspi-config command.
+Finally, enable the camera interface through the raspi-config command and make sure that the serial interface is enabled and is not allocated to the serial-console.
